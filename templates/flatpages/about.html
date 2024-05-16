@@ -1,0 +1,28 @@
+{% extends 'flatpages/default.html' %}
+
+{% block title %}
+News
+{% endblock title %}
+
+{% block content %}
+   <h1> Новости  </h1>
+   <hr>
+      <table>
+          <tr>
+               <td>Заголовок</td>
+               <td>Дата публикации<td>
+               <td>Содержание </td>
+               <td>Категория </td>
+           </tr>
+
+           <tr>
+
+               <td>{{ News.name_post }}</td>
+               <td>{{ News.data_post }}</td>
+               <td>{{ News.text_post }}</td>
+
+               <td>{{ cat.name_category }}</td>
+           </tr>
+           {% endfor %}
+
+{% endblock content %}
