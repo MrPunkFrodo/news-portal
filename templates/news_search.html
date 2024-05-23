@@ -1,0 +1,24 @@
+{% extends 'flatpages/default.html' %}
+{% block title %}
+Поиск новостей
+{% endblock title %}
+{% block content %}
+<h1>Найти</h1>
+{# Добавляем форму, которая объединяет набор полей, которые будут отправляться в запросе #}
+   <form action="" method="get">
+       {# Переменная, которую мы передали через контекст, может сгенерировать нам форму с полями #}
+       {{ filterset.form.as_p }}
+       {# Добавим кнопку отправки данных формы #}
+       <input type="submit" value="Найти" />
+   </form>
+
+{% if post_list %}
+    <ul>
+        {% for post in post_list %}
+            <li><a href="{% url 'detail' post.id %}" class="text-success">{{ post.title }} </a></li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p>Новостей по критериям нет</p>
+{% endif %}
+{% endblock content %}

@@ -2,7 +2,7 @@ from django import template
 
 register = template.Library()
 
-CENSOR_WORD = ['Доктор', 'Солей', 'Ситуаций']
+CENSOR_WORD = ['доктор', 'солей', 'Ситуаций']
 
 
 @register.filter()

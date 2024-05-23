@@ -1,7 +1,11 @@
 from django.shortcuts import render
 from datetime import datetime
-from django.views.generic import ListView
-from .models import Post
+from django.views.generic import ListView,DetailView, CreateView, UpdateView, DeleteView
+from .models import Post, Category, Author
+from .filters import NewsFilter
+from django.urls import reverse_lazy
+from django import forms
+from .forms import NewsSearchForm
 
 
 class PostsList(ListView):
@@ -10,6 +14,30 @@ class PostsList(ListView):
     template_name = 'posts_page.html'
     context_object_name = 'post_list'
     paginate_by = 10
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        self.filterset = NewsFilter(self.request.GET, queryset)
+        return self.filterset.qs
+
+    def get_context_data(self, **kwargs):
+        # С помощью super() мы обращаемся к родительским классам
+        # и вызываем у них метод get_context_data с теми же аргументами,
+        # что и были переданы нам.
+        # В ответе мы должны получить словарь.
+        context = super().get_context_data(**kwargs)
+        # К словарю добавим текущую дату в ключ 'time_now'.
+        context['time_now'] = datetime.now()
+        context['filterset'] = self.filterset
+        # Добавим ещё одну пустую переменную,
+        # чтобы на её примере рассмотреть работу ещё одного фильтра.
+        return context
+
+
+class PostDetail(DetailView):
+    model = Post
+    template_name = 'details.html'
+    context_object_name = 'post'
 
     def get_context_data(self, **kwargs):
         # С помощью super() мы обращаемся к родительским классам
@@ -25,7 +53,66 @@ class PostsList(ListView):
         return context
 
 
-def detail(request, pk):
-    post = Post.objects.get(pk__iexact=pk)
-    return render(request, "details.html", context={'post': post.text})
+class NewsSearch(ListView):
+    model = Post
+    ordering = 'date_created'
+    template_name = 'news_search.html'
+    context_object_name = 'post_list'
+    paginate_by = 10
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['filterset'] = self.filterset
+        return context
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        self.filterset = NewsFilter(self.request.GET, queryset)
+        return self.filterset.qs
+
+
+class PostCreateForm(forms.ModelForm):
+    class Meta:
+        model = Post
+        fields = [
+            'author', 'title', 'text'
+        ]
+
+
+class NewsCreate(CreateView):
+    permission_required = ('news.add_post',)
+    raise_exception = True
+    form_class = PostCreateForm
+    model = Post
+    template_name = 'news_create.html'
+
+    def form_valid(self, form):
+        post = form.save(commit=False)
+        post.categoryType = 'NW'
+        return super().form_valid(form)
+
+class PostEdit(UpdateView):
+    permission_required = ('news.change_post',)
+    raise_exception = True
+    form_class = PostCreateForm
+    model = Post
+    template_name = 'post_edit.html'
+
+class PostDelete(DeleteView):
+    permission_required = ('news.delete_post',)
+    raise_exception = True
+    model = Post
+    template_name = 'post_delete.html'
+    success_url = reverse_lazy('news_list')
+
+class ArticlesCreate(CreateView):
+    permission_required = ('news.add_post',)
+    raise_exception = True
+    form_class = PostCreateForm
+    model = Post
+    template_name = 'news_create.html'
+
+    def form_valid(self, form):
+        post = form.save(commit=False)
+        post.categoryType = 'AR'
+        return super().form_valid(form)

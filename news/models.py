@@ -19,11 +19,19 @@ class Author(models.Model):
         self.authorRating = p_rate * 3 + c_rate
         self.save()
 
+        class Meta:
+            verbose_name = 'Автор'
+            verbose_name_plural = 'Авторы'
+
 class Category(models.Model):
     name = models.CharField(max_length=64, unique=True)
 
     def __str__(self):
         return self.name
+
+    class Meta:
+        verbose_name = 'Категория'
+        verbose_name_plural = 'Категории'
 
 class Post(models.Model):
     author = models.ForeignKey(Author, on_delete=models.PROTECT)
