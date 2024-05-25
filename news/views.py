@@ -1,11 +1,13 @@
 from django.shortcuts import render
 from datetime import datetime
-from django.views.generic import ListView,DetailView, CreateView, UpdateView, DeleteView
+from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 from .models import Post, Category, Author
 from .filters import NewsFilter
 from django.urls import reverse_lazy
 from django import forms
 from .forms import NewsSearchForm
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import PermissionRequiredMixin
 
 
 class PostsList(ListView):
@@ -79,7 +81,7 @@ class PostCreateForm(forms.ModelForm):
         ]
 
 
-class NewsCreate(CreateView):
+class NewsCreate(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
     permission_required = ('news.add_post',)
     raise_exception = True
     form_class = PostCreateForm
@@ -91,21 +93,24 @@ class NewsCreate(CreateView):
         post.categoryType = 'NW'
         return super().form_valid(form)
 
-class PostEdit(UpdateView):
+
+class PostEdit(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
     permission_required = ('news.change_post',)
     raise_exception = True
     form_class = PostCreateForm
     model = Post
     template_name = 'post_edit.html'
 
-class PostDelete(DeleteView):
+
+class PostDelete(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
     permission_required = ('news.delete_post',)
     raise_exception = True
     model = Post
     template_name = 'post_delete.html'
     success_url = reverse_lazy('news_list')
 
-class ArticlesCreate(CreateView):
+
+class ArticlesCreate(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
     permission_required = ('news.add_post',)
     raise_exception = True
     form_class = PostCreateForm

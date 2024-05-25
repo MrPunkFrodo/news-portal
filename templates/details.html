@@ -7,8 +7,12 @@
     <p>{{ time_now|date:'d.m.Y' }}</p>
     <p class="container">{{ post.text|censor }}</p>
     <p>
+        {% if perms.news.change %}
         <a href="{% url 'detail' post.id %}/edit/" class="text-success">Редактировать</a>
+        {% endif %}
         <span>|</span>
+        {% if perms.news.delete %}
         <a href="{% url 'detail' post.id %}/delete/" class="text-success">Удалить</a>
+        {% endif %}
     </p>
 {% endblock content %}
