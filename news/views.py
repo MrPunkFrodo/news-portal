@@ -1,13 +1,16 @@
 from django.shortcuts import render
 from datetime import datetime
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
-from .models import Post, Category, Author
+from .models import Post, Category, Author, Subscriber, Category
 from .filters import NewsFilter
 from django.urls import reverse_lazy
 from django import forms
 from .forms import NewsSearchForm
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.mixins import PermissionRequiredMixin
+from django.views.decorators.csrf import csrf_protect
+from django.contrib.auth.decorators import login_required
+from django.db.models import Exists, OuterRef
 
 
 class PostsList(ListView):
@@ -77,7 +80,7 @@ class PostCreateForm(forms.ModelForm):
     class Meta:
         model = Post
         fields = [
-            'author', 'title', 'text'
+            'author', 'title', 'text', 'postCategory',
         ]
 
 
@@ -121,3 +124,33 @@ class ArticlesCreate(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
         post = form.save(commit=False)
         post.categoryType = 'AR'
         return super().form_valid(form)
+
+@login_required
+@csrf_protect
+def subscriptions(request):
+    if request.method == 'POST':
+        category_id = request.POST.get('category_id')
+        category = Category.objects.get(id=category_id)
+        action = request.POST.get('action')
+
+        if action == 'subscribe':
+            Subscriber.objects.create(user=request.user, category=category)
+        elif action == 'unsubscribe':
+            Subscriber.objects.filter(
+                user=request.user,
+                category=category,
+            ).delete()
+
+    categories_with_subscriptions = Category.objects.annotate(
+        user_subscribed=Exists(
+            Subscriber.objects.filter(
+                user=request.user,
+                category=OuterRef('pk'),
+            )
+        )
+    ).order_by('name')
+    return render(
+        request,
+        'subscriptions.html',
+        {'categories': categories_with_subscriptions},
+    )

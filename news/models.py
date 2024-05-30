@@ -43,7 +43,7 @@ class Post(models.Model):
     )
 
     def get_absolute_url(self):
-        return reverse('details', kwargs={'pk': self.pk})
+        return reverse('detail', kwargs={'pk': self.pk})
 
     categoryType = models.CharField(max_length=2, choices=CATEGORY_CHOICES, default=NEWS)
     date_created = models.DateTimeField(auto_now_add=True)
@@ -91,3 +91,15 @@ class Comment(models.Model):
     def dislike(self):
         self.rating -= 1
         self.save()
+
+class Subscriber(models.Model):
+    user = models.ForeignKey(
+        to=User,
+        on_delete=models.CASCADE,
+        related_name='subscriber',
+    )
+    category = models.ForeignKey(
+        to='Category',
+        on_delete=models.CASCADE,
+        related_name='subscriber',
+    )

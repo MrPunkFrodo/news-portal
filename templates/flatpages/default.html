@@ -39,7 +39,11 @@
                <li class="nav-item">
                    <a class="nav-link" href="/news/search/">Поиск</a>
                </li>
-
+               {% if user.is_authenticated %}
+                   <li class="nav-item">
+                       <a class="nav-link" href="{% url 'subscriptions' %}">Подписка на новости</a>
+                   </li>
+               {% endif %}
                {% if user.is_authenticated %}
                   <li>User: {{ user.get_username }}</li>
                   <li class="nav-item">
