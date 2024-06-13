@@ -11,6 +11,7 @@ from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.views.decorators.csrf import csrf_protect
 from django.contrib.auth.decorators import login_required
 from django.db.models import Exists, OuterRef
+from .tasks import send_note
 
 
 class PostsList(ListView):
@@ -94,6 +95,8 @@ class NewsCreate(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
     def form_valid(self, form):
         post = form.save(commit=False)
         post.categoryType = 'NW'
+        post.save()
+        send_note.apply_async([post.pk])
         return super().form_valid(form)
 
 
